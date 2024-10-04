@@ -1,0 +1,22 @@
+name: Bisect
+
+on:
+  [workflow_dispatch]
+
+jobs:
+  bisect:
+    name: Bisection Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: dtolnay/rust-toolchain@stable
+      - run: sudo apt-get update
+      - run: sudo apt-get install valgrind libssl-dev
+      - run: valgrind --version
+      - run: cargo --version
+      - run: pwd
+      - run: ls -la bisect.sh
+      - run: cargo install cargo-valgrind
+      - run: cargo install cargo-bisect-rustc
+      - run: cargo bisect-rustc --start=2024-09-27 --end=2024-10-03 --script $(realpath ./bisect.sh) --term-old="No leak" --term-new="Found valgrind leak" -vv
