@@ -1,0 +1,28 @@
+name: Valgrind
+
+on:
+  [workflow_dispatch]
+
+jobs:
+  valgrind:
+    name: Valgrind Tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - nightly
+          - nightly-2024-09-27
+          - nightly-$(date +'%Y-%m-%d')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install latest nightly
+        uses: dtolnay/rust-toolchain@stable
+        with:
+            toolchain: ${{matrix.toolchain}}
+      - run: sudo apt-get update
+      - run: sudo apt-get install valgrind
+      - run: valgrind --version
+      - run: cargo +${{matrix.toolchain}} --version
+      - run: cargo +${{matrix.toolchain}} install cargo-valgrind
+      - run: cargo +${{matrix.toolchain}} valgrind run --bin bin
